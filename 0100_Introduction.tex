@@ -1,0 +1,84 @@
+\section{Introduction}
+
+Most basic texts on finite automata give algorithms for minimizing the number of states in a finite
+automaton. However, a worst case analysis of these algorithms indicate that they are $n^2$ processes
+where $n$ is the number of states. For finite automata with large numbers of states, these algorithms
+are grossly inefficient. Thus in this paper we describe an algorithm for minimizing the states in
+which the asymptotic running time in a worst case analysis grows as $n \log n$. The constant of
+proportionality depends linearly on the number of input symbols. Clearly the same algorithm can be
+used to determine if two finite automata are equivalent.
+
+The essence of previously published algorithms was to first partition the states according to their
+outputs. The blocks of the partitions are then repeatedly refined by examining the successor state on a
+given input for each state in the block. States whose successor states on a given input are in different
+blocks are placed in separate blocks. When no further refinement is possible, all states in the same block of
+the partition can be shown to be equivalent. Consider the example in Figure \ref{example01}.
+The initial partition is
+$(1,2,3,4,5)(6)$. Since on input $0$, the successor states of states 1, 2, 3 and 4 are in the first
+block of the partition and the successor of state 5 is in the second block, the first iteration
+refines the partition into the blocks $(1,2,3,4)(5)$ and $(6)$. Successive refinements yield
+$(1,2,3)(4)(5)(6)$, $(1,2)(3)(4)(5)(6)$ and $(1)(2)(3)(4)(5)(6)$. Thus in this example all pairs
+of states are inequivalent. For this example it is seen that as many as $n$ iterations may be required
+and the total number of steps needed to execute the algorithm if implemented in a straightforward
+fashion on a digital computer is $n^2$.
+
+\begin{figure}[ht]
+\caption{Example 1}
+\label{example01}
+\begin{center}
+\begin{tabular}{c|cc|c}
+      & \multicolumn{2}{|c|}{Input} &  \\
+State & 0 & 1 & Output \\
+\hline
+1     & 2 & 1 & 0      \\
+2     & 3 & 2 & 0      \\
+3     & 4 & 3 & 0      \\
+4     & 5 & 4 & 0      \\
+5     & 6 & 5 & 0      \\
+6     & 6 & 6 & 1      \\
+\multicolumn{1}{c}{}  & \multicolumn{2}{c}{Next}  & \multicolumn{1}{c}{} \\
+\multicolumn{1}{c}{}  & \multicolumn{2}{c}{State} & \multicolumn{1}{c}{} \\
+\end{tabular}
+\end{center}
+\end{figure}
+
+The algorithm proposed in this paper may also require $n$ iterations but the work per iteration summed
+over all iterations yields only $n log n$. We illustrate the algorithm by an example before specifying it in
+detail. Extensive use of list processing is employed to reduce the computation time. First the state table
+is inverted to obtain the table shown in Figure \ref{inverted02}.
+The states are partitioned according to their outputs
+$(1,2,3,4,5)(6)$. Next a block and an input symbol on which the partition is refined are selected. Assume
+the block $(6)$ and input $0$ are selected. The states in each block are further partitioned depending on
+whether on input $0$ their next state is in block $(6)$ or not. Thus the next partition is $(1,2,3,4)(5)(6)$.
+Note that had we partitioned on the block $(1,2,3,4,5)$ and input $0$ we would have obtained the same result.
+
+\begin{figure}[ht]
+\caption{Inverted Table}
+\label{inverted02}
+\begin{center}
+\begin{tabular}{c|cc|c}
+       & \multicolumn{2}{|c|}{Input} &  \\
+States & 0 & 1 & Output \\
+\hline
+1      & -    & 1 & 0      \\
+2      & 1    & 2 & 0      \\
+3      & 2    & 3 & 0      \\
+4      & 3    & 4 & 0      \\
+5      & 4    & 5 & 0      \\
+6      & 5, 6 & 6 & 1      \\
+\multicolumn{1}{c}{}  & \multicolumn{2}{c}{Previous}  & \multicolumn{1}{c}{} \\
+\multicolumn{1}{c}{}  & \multicolumn{2}{c}{State} & \multicolumn{1}{c}{} \\
+\end{tabular}
+\end{center}
+\end{figure}
+
+More generally, once we have partitioned on a block
+and an input symbol, we need never partition on that
+block and input symbol again until the block is
+split and then we need only partition on one of
+the two subblocks. Since the time needed to
+partition on a block is proportional to the
+transitions into the block and since we can always
+select the half with fewer transitions, the total
+number of steps in the algorithm is bounded by
+$n log n$.

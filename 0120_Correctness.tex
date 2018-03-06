@@ -1,0 +1,27 @@
+\section{Correctness of the algorithm}
+
+The claim is made that on termination of the algorithm two states are equivalent if and only if they are
+in the same block. The algorithm must terminate since the only times that an index is added to $L(a)$ for
+some $a$ in $I$ are in Step 4 which is executed only once and in Step 7c. An index is added at Step 7c only
+after a refinement of a block of the partition. Each time Step 6 is executed, an index is removed from $L(a)$
+for some $a$. Thus the algorithm must terminate.
+
+It is easily shown by induction on the number of times Step 7a is executed that if $s$ is in $B(i)$ and
+$t$ is in $B(j)$, $i \neq j$, then $s$ is not equivalent to $t$. Clearly, it is true the first time Step 7a is
+executed since only two blocks exist, $B(1)$ containing only final states and $B(2)$ containing only nonfinal
+states. Blocks are refined at Step 7a only when successor states on a given input have previously been
+shown to be inequivalent.
+
+To see that two inequivalent states cannot be in the same block when the algorithm terminates, assume
+that states $s$ and $t$ are in $B(i)$ and that $s$ and $t$ are not equivalent. Without loss of generality,
+assume $\delta (s, a)$ is in $B(j)$ and $\delta (t, a)$ is in $B(k)$ where $j \neq k$. (If $\delta (s, a)$ and $\delta (t, a)$ are in the
+same block then there exists a shortest $x$ such that $\delta (s, x)$ and $\delta (t, x)$ are in distinct blocks. Clearly
+an $x$ exists and hence a shortest $x$ since for some $x$ one or the other of $\delta (s, x)$ and $\delta (t, x)$ but not
+both is in a final state and each block consists solely of final or solely of nonfinal states. Let $a$ be the
+last symbol of $x$ and write $x = ya$. Then $\delta (s, y)$ and $\delta (t, y)$ are in the same block, $\delta (s, y)$ and $\delta (t, y)$
+are not equivalent and $\delta (\delta (s, y), a)$ and $\delta (\delta (t, y), a)$ are in different blocks. Replace $s$ by $\delta (s, y)$ and
+replace $t$ by $\delta (t, y)$.) Consider the point at which the block containing $\delta (s, a)$ and $\delta (t, a)$ was
+partitioned so that $\delta (s, a)$ and $\delta (t, a)$ first appeared in separate subblocks. At that point one of the
+two subblocks was placed in $L(a)$. When this subblock is removed from $L(a)$, the block containing $s$ and
+$t$ is partitioned with $s$ and $t$ going into separate subblocks. Thus $s$ and $t$ cannot both be in $B(i)$,
+a contradiction.

@@ -1,0 +1,42 @@
+\section{Formal description of the algorithm}
+
+Let $A = (S,I,\delta,F)$ be a finite automaton where $S$ is a finite set of states, $I$ is a finite set of
+inputs, $\delta$ is a mapping from $S \times I$ into $S$ and $F \subseteq S$ is the set of final states. No
+initial state is
+specified since it is of no importance in what follows. The mapping $\delta$ is extended to $S \times I$ in the usual
+manner where $I^*$ denotes the set of all finite length strings of symbols from $I$. States $s$ and $t$ are
+said to be equivalent if for each $x$ in $I$, $\delta (s,x)$ is in $F$ if and only if $\delta (t,x)$ is in $F$.
+
+The algorithm for finding the equivalence classes of $S$ is described below.
+
+\begin{description}
+\item[Step 1]    $\forall s \in S$ and $a \in I$ construct  \\
+                     $\delta^{-1} (s,a) = \{ t | \delta (t,a) = s \}$
+\item[Step 2]    Construct $B(1) = F$ , $B(2) = S-F$ and for each $a$ in $I$ and $1 \leq i \leq 2$ construct  \\
+                     $a(i) = \{ s | s \in B(i) \, \textrm{and} \, \delta^{-1} (s,a) \neq \emptyset \} $
+\item[Step 3]    Set $k=3$
+\item[Step 4]    $ \forall a \in I$ construct  \\
+                     $L(a) = \left\{
+                               \begin{array}{l}
+                                 \{ 1 \} \, \textrm{if} \, | a(1) | \leq | a(2) | \\
+                                 \{ 2 \} \, \textrm{otherwise} \, \\
+                               \end{array}
+                             \right. $
+\item[Step 5]    Select $a$ in $I$ and $i$ in $L(a)$. The algorithm terminates when $L(a) = \emptyset$ for each
+                 $a$ in $I$
+\item[Step 6]    Delete $i$ from $L(a)$
+\item[Step 7]    $\forall j < k \, \textrm{st} \, \exists t \, \textrm{in} \, B(j) \, \textrm{with} \, \delta (t,a) \in a(i)$
+                 perform steps 7a, 7b, 7c, and 7d.
+\item[Step 7a]   Partition $B(j)$ into $B'(j) = \{ t | \delta (t,a) \in a(a) \}$ and $B''(j) = B(j) - B'(j)$
+\item[Step 7b]   Replace $B(j)$ by $B'(j)$ and construct $B(k) = B''(j)$. Construct corresponding $a(j)$ and $a(k)$
+                 for each $a$ in $I$.
+\item[Step 7c]   $\forall a \in I$ modify $L(a)$ as follows.  \\
+                   $L(a) = \left\{
+                             \begin{array}{l}
+                               L(a) \cup \{ j \}  \, \textrm{if} j \notin L(a) \, \textrm{and} \, 0 < |a(j)| \leq |a(k)|  \\
+                               L(a) \cup \{ k \}  \, \textrm{otherwise}  \\
+                             \end{array}
+                           \right. $
+\item[Step 7d]   Set $k=k+1$
+\item[Step 8]    Return to Step 5
+\end{description}

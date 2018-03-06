@@ -1,0 +1,29 @@
+\documentclass[dvipdfm,a4paper]{article}
+\usepackage[dvips]{graphicx}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[dvipdfm,colorlinks=true,linkcolor=blue]{hyperref}
+
+\title{An n log n Algorithm for Minimizing States in a Finite Automaton}
+\author{John Hopcroft}
+\date{January 1971}
+
+\begin{document}
+\pagestyle{headings}
+\maketitle
+
+\begin{abstract}
+An algorithm is given for minimizing the number of states in a finite automaton or for
+determining if two finite automata are equivalent. The asymptotic running time of the
+algorithm is bounded by $k n \log n$ where $k$ is some constant and $n$ is the number of
+states. The constant $k$ depends linearly on the size of the input alphabet.
+\end{abstract}
+
+\tableofcontents
+
+\input{0100_Introduction}
+\input{0110_Formal_Description}
+\input{0120_Correctness}
+\input{0130_Analysis}
+\input{0140_Conclusions}
+
+\end{document}

@@ -1,0 +1,44 @@
+\section{Experimental results and conclusions}
+
+In order to obtain timing information, the algorithm was applied to two classes of finite automata.
+Automata in the first class are given by $A(n) = (\{1, 2, \ldots, n\}, \{0, 1\}, \delta, \{ 1 \})$
+where $\delta (1,0) = \delta (1,1) = 1$ and
+$\delta (i, 0) = i - 1$ and $\delta (i, 1) = i$ for $2 \leq i \leq n$.
+Automata in the second class are given (for even $n$) by
+$B(n) = (\{1, 2, \ldots, n\}, \{0, 1\}, \delta, \{i|1 \leq i \leq n/2 \})$ where
+$\delta (i, 0) = \delta (i, 1) = n/2 + 2i - 1$ and
+$\delta (n/4 + i, 0) = \delta (n/4 + i, 1) = 2i - 1$ for $1 \leq i \leq n/4$
+and $\delta (n/2+i, 0) = \delta (n/2+i, 1) = 2i - 1$ for
+$n/2 < i \leq n$. The running times on an IBM 360/67 for the two classes are listed in Table \ref{results01}.
+
+\begin{table}[ht]
+\caption{time in seconds}
+\label{results01}
+\begin{center}
+\begin{tabular}{c|c|c}
+$n$     &  $A(n)$              &  $B(n)$             \\
+\hline
+        &                      &                     \\
+$100$   &  $   \frac{37}{60}$  &  $   \frac{2}{3}$   \\
+        &                      &                     \\
+$1000$  &  $5  \frac{50}{60}$  &  $6  \frac{3}{4}$   \\
+        &                      &                     \\
+$2003$  &  $11 \frac{38}{60}$  &  $13 \frac{2}{3}$   \\
+\end{tabular}
+\end{center}
+\end{table}
+
+Note that $A(n)$ is the example which required $n^2$ steps for previous algorithms.
+
+Our algorithm is particularly suited for $A(n)$ and a detailed analysis shows that the running time
+should grow linearly with the number of states as the experimental evidence indicates. The worst case for
+our algorithm is typified by $B(n)$ in which blocks are always partitioned equally. The running time for
+$B(n)$ should grow as $n log n$ for both the current algorithm and for previously published algorithms. The
+results seem to indicate that the algorithm is practical for minimizing states in finite automata (or testing
+equivalence of finite automata) of up to several thousand states.
+
+\section{References}
+
+1. Harrison, M. A., Introduction to Switching and Automata Theory, McGraw-Hill, New York, 1965.
+
+2. McCluskey, E. J., Introduction to the Theory of Switching Circuits, McGraw-Hill, New York, 1965.

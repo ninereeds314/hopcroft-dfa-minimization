@@ -1,0 +1,78 @@
+\section{Analysis of the running time}
+
+The running time of the algorithm is clearly dependent on the implementation. The algorithm has been
+programmed in ALGOL. Since the implementation consists of approximately 300 ALGOL statements we shall simply
+indicate how the various steps were implemented and discuss informally their running time.
+
+The sets such as $\delta^{-1} (s, a)$, $L(a)$, etc. were represented by linked lists in such a way that an item
+could be added or deleted at the beginning of the list in a fixed number of steps. Vectors were also
+maintained to indicate if a state was or was not on a given list. This eliminates searching a list simply
+to determine if the item is on the list and is essential in Step 7c. The sets $B(i)$ and $a(i)$ were
+represented as doubly linked lists so that an item could be added or deleted anywhere in the list in a fixed
+number of steps once the position is given. The structure was such that given a state $s$, its position in
+$B(i)$ and $a(i)$ could be determined in a fixed number of steps.
+
+Steps 1, 2, 3 and 4 are executed only once andd require time proportional to the product of the number of
+states times the number of input symbols. Steps 5 through 8 form a simple loop. The time necessary to
+traverse the loop for given $a$ in $I$ and $i$ in $L(a)$ is proportional to the number of state transitions
+on input $a$ terminating on states in $B(i)$. (To see this, note that Steps 5, 6 and 8 are finite. In
+Step 7 we do not need to examine $B(j)$ for each $j < k$ to see if there exists a $t$ in $B(j)$ with $\delta (t, a)$
+in $a(i)$. Rather we look at each state in $a(i)$ and then consult the inverse state table to find each $t$
+such that $\delta (t, a)$ is in $a(i)$. Each time a new $t$ is found, the block containing $t$ is located and
+placed on a list of states to be split off from the block. The block is then placed on a list of blocks
+which have been refined if it is not already on the list. Finally we go down the list of blocks which have
+been refined and actually partition them. The number of blocks we must look at must be less than the number
+of state transitions on input $a$ terminating on states in $B(i)$. The time necessary to actually partition
+a block is proportional to the number of states to be split off. When the number is summed over all blocks
+which are partitioned it adds up to the number of state transitions on input $a$ terminating on states in
+$B(i)$.) Let $k$ be the constant of proportionality.
+
+Consider the time spent in the loop of Step 5 through 8 for a given input symbol $a$. Assume that at
+step 5 the blocks of the partition are $B(1), B(2), \ldots, B(m)$ and that $L(a) = \{ i_1, i_2, \ldots, i_r \}$ . Let
+$\{ i_{r+l}, i_{r+2}, \ldots, i_m \} = \{1, 2, \ldots, m\} - L(a)$. The claim is made
+that the total time spent on traversals of the
+loop for which input symbol $a$ is selected in Step 5 until the program terminates is bounded by
+
+\begin{displaymath}
+T = k(\sum_{j=1}^{r} a_{i_j} \log a_{i_j} + \sum_{j=r+1}^{m} a_{i_j} \log (a_{i_j} / 2))
+\end{displaymath}
+
+Clearly the bound is valid if the algorithm has terminated. If the loop is traversed for an input symbol
+other than $a$, then the time spent is not included in $T$. However, since blocks get split and the set
+$L(a)$ modified we must show that the new value of $T$, call it $\hat{T}$, is less than or equal to the old value
+of $T$. If a block whose index is in $L(a)$ is partitioned, then a term of the form $b \log b$ is replaced by
+the expression $c \log c + (b - c) \log (b - c)$ which decreases the value of $T$. If a block whose index is not
+in $L(a)$ is partitioned, then a term of the form $b \log b/2$ is replaced by the expression
+
+\begin{displaymath}
+c \log c + (b - c) \log (b - c) / 2
+\end{displaymath}
+
+where $c \leq b-c$. Since $c \leq b/2$ and $(b - c)/2 \leq b/2$,
+
+\begin{displaymath}
+\begin{array}{rl}
+c \log c + (b - c) \log (b - c) / 2   &   \leq  c \log b/2 + (b - c) \log b/2  \\
+                                      &   \leq  b \log b/2                     \\
+\end{array}
+\end{displaymath}
+
+In either case $\hat{T}$ is less than $T$. Finally, assume $r \neq 0$ and $a$ and some $\vartheta$ in $L(a)$ has been
+selected at Step 5. As we showed earlier, the time around the loop is bounded by $ka_{\vartheta}$. Thus by induction,
+the total time is bounded by
+
+\begin{displaymath}
+k[a_{\vartheta} + a_{\vartheta} \log (a_{\vartheta} / 2) + \sum_{j=1, j \neq \vartheta}^{r} a_{i_j} \log a_{i_j} + \sum_{j=r+1}^{m} a_{i_j} \log (a_{i_j} / 2)]
+\end{displaymath}
+
+We must show that this expression is less than or equal to $T$. That is, we need to show
+
+\begin{displaymath}
+a_{\vartheta} + a_{\vartheta} \log a_{\vartheta} / 2 \leq a_{\vartheta} \log a_{\vartheta}
+\end{displaymath}
+
+Clearly $a_{\vartheta} + a_{\vartheta} \log a_{\vartheta} / 2 = a_{\vartheta} (\log a_{\vartheta} / 2 + \log 2) = a_{\vartheta} \log a_{\vartheta}$.
+This completes the proof of the claim.
+
+The first time Step 5 is executed the formula for $T$ is bounded by $kn \log n$. Multiply by the number
+of input symbols and adding in the time for Steps 1 through 4 yields a total bound proportional to $n \log n$.

@@ -1,0 +1,342 @@
+Algol listing in downloaded scanned document is difficult to read. Reconstruction...
+
+
+
+STANFORD ALGOL W  (VERSION 21NOV69)                                              09 DECEMBER 1970  @  12:17      PAGE   1
+
+0001 --      COMMENT*****************************************************************
+0002 --      *     ALGORITHM TO MINIMIZE STATES IN FINITE AUTOMATON
+0003 --               **************************************************************;
+0004 1-      BEGIN
+0005 --         INTEGER N;
+0006 --         READ(N);
+0007 2-            BEGIN
+0008 --               INTEGER ARRAY NEXTONZERO,NEXTONONE,PREVONZERO,PREVONONE(1::N);
+0009 --               INTEGER ARRAY FINAL(1::N);
+0010 --               INTEGER ARRAY DATA,NEXT(1::6*N);
+0011 --               INTEGER ARRAY STATENEXT,STATELAST,ONENEXT,ONELAST,ZERONEXT,
+0012 --                  ZEROLAST,SPLIT(1::2*N);
+0013 --               INTEGER ARRAY BLOCK,NUMINBLOCK,NUMINSPLIT(1::N);
+0014 --               INTEGER ARRAY BLOCKSPLIT(1::N);
+0015 --               INTEGER ARRAY NUMZERO,NUMONE(1::N);
+0016 --               INTEGER ARRAY ONBLOCKLISTZERO,ONBLOCKLISTONE(1::N);
+0017 --               INTEGER ARRAY NZEROTR,NONETR(1::N);
+0018 --               INTEGER BLOCKLISTZERO,BLOCKLISTONE;
+0019 --               INTEGER FREE,CELL;
+0020 --               INTEGER LIST;
+0021 --               INTEGER SPLITBLOCKS;
+0022 --               INTEGER K,J,STATE,LASTSTATE,FREEBLOCK,BSPLIT;
+0023 --               PROCEDURE ADD(INTEGER VALUE RESULT X;INTEGER VALUE Y);
+0024 3-                  BEGIN
+0025 --                     INTEGER TEMP;
+0026 --                     TEMP:=FREE;
+0027 --                     FREE:=NEXT(FREE);
+0028 --                     NEXT(TEMP):=X;
+0029 --                     X:=TEMP;
+0030 --                     DATA(X):=Y;
+0031 -3                  END;
+0032 --               PROCEDURE REMOVEFROM(INTEGER VALUE RESULT X);
+0033 3-                  BEGIN
+0034 --                     INTEGER TEMP;
+0035 --                     TEMP:=FREE;
+0036 --                     FREE:=X;
+0037 --                     X:=NEXT(X);
+0038 --                     NEXT(FREE):=TEMP;
+0039 -3                  END;
+0040 --               PROCEDURE INSERTSTATE(INTEGER VALUE X,Y);
+0041 3-                  BEGIN
+0042 --                     STATENEXT(N+Y):=STATENEXT(X);
+0043 --                     STATELAST(N+Y):=X;
+0044 --                     IF (STATENEXT(X)¬=0) THEN
+0045 --                     STATELAST(STATENEXT(X)):=N+Y;
+0046 --                     STATENEXT(X):=N+Y;
+0047 -3                  END;
+0048 --               PROCEDURE INSERTZERO(INTEGER VALUE X,Y);
+0049 3-                  BEGIN
+0050 --                     ZERONEXT(N+Y):=ZERONEXT(X);
+0051 --                     ZEROLAST(N+Y):=X;
+0052 --                     IF (ZERONEXT(X)¬=0) THEN
+0053 --                     ZEROLAST(ZERONEXT(X)):=N+Y;
+0054 --                     ZERONEXT(X):=N+Y;
+0055 -3                  END;
+0056 --               PROCEDURE INSERTONE(INTEGER VALUE X,Y);
+0057 3-                  BEGIN
+0058 --                     ONENEXT(N+Y):=ONENEXT(X);
+
+
+
+STANFORD ALGOL W  (VERSION 21NOV69)                                              09 DECEMBER 1970  @  12:17      PAGE   2
+
+0059 --                     ONELAST(N+Y):=X;
+0060 --                     IF (ONENEXT(X)¬=0) THEN
+0061 --                     ONELAST(ONENEXT(X)):=N+Y;
+0062 --                     ONENEXT(X):=N+Y;
+0063 -3                  END;
+0064 --      PROCEDURE INITIALIZE;
+0065 3-      BEGIN
+0066 --               COMMENT********************************************************
+0067 --               *     INITIALIZE
+0068 --               **************************************************************;
+0069 --               FOR I:=1 UNTIL 2*N DO
+0070 4-                  BEGIN
+0071 --                     STATENEXT(I):=STATELAST(I):=0;
+0072 --                     ONENEXT(I):=ONELAST(I):=0;
+0073 -4                     ZERONEXT(I):=ZEROLAST(I):=0;
+0074 --                  END;
+0075 4-               FOR I:=1 UNTIL N DO
+0076 --                  BEGIN
+0077 --                     PREVONZERO(I):=PREVONONE(I):=0;
+0078 --                     NUMZERO(I):=NUMONE(I):=0;
+0079 --                     SPLIT(I):=BLOCKSPLIT(I):=0;
+0080 --                     NUMINBLOCK(I):=NUMINSPLIT(I):=0;
+0081 --                     ONBLOCKLISTZERO(i):=ONBLOCKLISTONE(I):=0;
+0082 -4                     NZEROTR(I):=NONETR(I):=0;
+0083 --                  END;
+0084 --               FOR I:=1 UNTIL 6*N DO NEXT(I):=I+1;
+0085 --               NEXT(6*N):=0;
+0086 --               BLOCKLISTZERO:=BLOCKLISTONE:=0;
+0087 --               FREE:=1;
+0088 --               SPLITBLOCKS:=0;
+0089 --               WRITE("STATE TABLE");
+0090 --               WRITE("          STATE           INPUT 0     INPUT 1
+0091 --       OUTPUT");
+0092 --               FOR I:=1 UNTIL N DO
+0093 4-                  BEGIN
+0094 --                     READ(NEXTONZERO(I),NEXTONONE(I),FINAL(I));
+0095 --                     WRITE(I,NEXTONZERO(I),NEXTONONE(I),FINAL(I));
+0096 -4                  END;
+0097 --               COMMENT********************************************************
+0098 --               *     INVERT STATE TABLE
+0099 --               **************************************************************;
+0100 --               FOR I := 1 UNTIL N DO
+0101 4-                  BEGIN
+0102 --                     ADD(PREVONZERO(NEXTONZERO(I)),I);
+0103 --                     NZEROTR(DATA(PREVONZERO(NEXTONZERO(I)))):=
+0104 --                        NZEROTR(DATA(PREVONZERO(NEXTONZERO(I))))+1;
+0105 --                     ADD(PREVONONE(NEXTONONE(I)),I);
+0106 --                     NONETR(DATA(PREVONONE(NEXTONONE(I)))):=
+0107 --                        NONETR(DATA(PREVONONE(NEXTONONE(I))))+1;
+0108 -4                  END;
+0109 --               COMMENT********************************************************
+0110 --               *     SET UP INITIAL BLOCKS
+0111 --               **************************************************************;
+0112 --               FOR I := 1 UNTIL N DO
+0113 4-                  BEGIN
+0114 --                     IF FINAL(I)=1 THEN
+0115 5-                        BEGIN
+0116 --                           INSERTSTATE(1,I);
+
+
+
+STANFORD ALGOL W  (VERSION 21NOV69)                                              09 DECEMBER 1970  @  12:17      PAGE   3
+
+0117 --                           IF NEXTONZERO(I)¬=0 THEN
+0118 6-                              BEGIN
+0119 --                                 INSERTZERO(1,I);
+0120 --                                 NUMZERO(1):=NUMZERO(1)+NZEROTR(I);
+0121 -6                              END;
+0122 --                           IF NEXTONONE(I)¬=0 THEN
+0123 6-                              BEGIN
+0124 --                                 INSERTONE(1,I);
+0125 --                                 NUMONE(1):=NUMONE(1)+NONETR(I);
+0126 -6                              END;
+0127 --                           BLOCK(I):=1;
+0128 --                           NUMINBLOCK(I):=NUMINBLOCK(I)+1;
+0129 -5                        END
+0130 --                     ELSE
+0131 5-                        BEGIN
+0132 --                           INSERTSTATE(2,I);
+0133 --                           IF NEXTONZERO(I)¬=0 THEN
+0134 6-                              BEGIN
+0135 --                                 INSERTZERO(2,I);
+0136 --                                 NUMZERO(2):=NUMZERO(2)+NZEROTR(I);
+0137 -6                              END;
+0138 --                           IF NEXTONONE(I)¬=0 THEN
+0139 6-                              BEGIN
+0140 --                                 INSERTONE(2,I);
+0141 --                                 NUMONE(2):=NUMONE(2)+NONETR(I);
+0142 -6                              END;
+0143 --                           BLOCK(I):=2;
+0144 --                           NUMINBLOCK(2):=NUMINBLOCK(2)+1;
+0145 -5                        END;
+0146 -4                  END;
+0147 --               IF (NUMZERO(1)>=0) AND (NUMZERO(1)<=NUMZERO(2)) THEN
+0148 4-                  BEGIN
+0149 --                     ADD(BLOCKLISTZERO,1);
+0150 --                     ONBLOCKLISTZERO(1):=1;
+0151 -4                  END
+0152 --               ELSE
+0153 4-                  BEGIN
+0154 --                     ADD(BLOCKLISTZERO,2);
+0155 --                     ONBLOCKLISTZERO(2):=2;
+0156 -4                  END;
+0157 --               IF (NUMONE(1)>=0) AND (NUMONE(1)<=NUMONE(2)) THEN
+0158 4-                  BEGIN
+0159 --                     ADD(BLOCKLISTONE,1);
+0160 --                     ONBLOCKLISTONE(1):=1;
+0161 -4                  END
+0162 --               ELSE
+0163 4-                  BEGIN
+0164 --                     ADD(BLOCKLISTONE,2);
+0165 --                     ONBLOCKLISTONE(2):=2;
+0166 -4                  END;
+0167 --               FREEBLOCK:=3;
+0168 -3      END;
+0169 --      INITIALIZE;
+0170 --               COMMENT********************************************************
+0171 --               *     SELECT BLOCK AND PARTITION ON IT
+0172 --               **************************************************************;
+0173 --      REPEAT:  IF BLOCKLISTZERO¬=0 THEN
+0174 3-                  BEGIN
+
+
+
+STANFORD ALGOL W  (VERSION 21NOV69)                                              09 DECEMBER 1970  @  12:17      PAGE   4
+
+0175 --                     J:=DATA(BLOCKLISTZERO);
+0176 --                     REMOVEFROM(BLOCKLISTZERO);
+0177 --                     ONBLOCKLISTZERO(J):=0;
+0178 --                     GO TO DIVZERO;
+0179 -3                  END
+0180 --               ELSE IF BLOCKLISTONE¬=0 THEN
+0181 3-                  BEGIN
+0182 --                     J:=DATA(BLOCKLISTONE);
+0183 --                     REMOVEFROM(BLOCKLISTONE);
+0184 --                     ONBLOCKLISTONE(J):=0;
+0185 --                     GO TO DIVONE;
+0186 -3                  END
+0187 --               ELSE GO TO FINISHED;
+0188 --      DIVZERO: STATE:=ZERONEXT(J);
+0189 --               WHILE STATE¬=0 DO
+0190 3-                  BEGIN
+0191 --                     CELL:=PREVONZERO(STATE-N);
+0192 --                     WHILE CELL¬=0 DO
+0193 4-                        BEGIN
+0194 --                           LASTSTATE:=DATA(CELL);
+0195 --                           K:=BLOCK(LASTSTATE);
+0196 --                           ADD(SPLIT(K),LASTSTATE);
+0197 --                           IF BLOCKSPLIT(K)=0 THEN ADD(SPLITBLOCKS,K);
+0198 --                           NUMINSPLIT(K):=NUMINSPLIT(K)+1;
+0199 --                           BLOCKSPLIT(K):=1;
+0200 --                           CELL:=NEXT(CELL);
+0201 -4                        END;
+0202 --                     STATE:=ZERONEXT(STATE);
+0203 -3                  END;
+0204 --               GO TO RETURN;
+0205 --      DIVONE:  STATE:=ONENEXT(J);
+0206 --               WHILE STATE¬=0 DO
+0207 3-                  BEGIN
+0208 --                     CELL:=PREVONONE(STATE-N);
+0209 --                     WHILE CELL¬=0 DO
+0210 4-                        BEGIN
+0211 --                           LASTSTATE:=DATA(CELL);
+0212 --                           K:=BLOCK(LASTSTATE);
+0213 --                           ADD(SPLIT(K),LASTSTATE);
+0214 --                           IF BLOCKSPLIT(K)=0 THEN ADD(SPLITBLOCKS,K);
+0215 --                           NUMINSPLIT(K):=NUMINSPLIT(K)+1;
+0216 --                           BLOCKSPLIT(K):=1;
+0217 --                           CELL:=NEXT(CELL);
+0218 -4                        END;
+0219 --                     STATE:=ONENEXT(STATE);
+0220 -3                  END;
+0221 --               COMMENT********************************************************
+0222 --               *     REFINE BLOCKS
+0223 --               **************************************************************;
+0224 --      RETURN:  IF (SPLITBLOCKS=0) THEN GO TO REPEAT;
+0225 --               BSPLIT:=DATA(SPLITBLOCKS);
+0226 --               REMOVEFROM(SPLITBLOCKS);
+0227 --               BLOCKSPLIT(BSPLIT):=0;
+0228 --               IF NUMINBLOCK(BSPLIT)=NUMINSPLIT(BSPLIT) THEN
+0229 3-                  BEGIN
+0230 --                     NUMINSPLIT(BSPLIT):=0;
+0231 --                     WHILE (SPLIT(BSPLIT)¬=0) DO REMOVEFROM(SPLIT(BSPLIT));
+0232 --                     GO TO RETURN;
+
+
+
+STANFORD ALGOL W  (VERSION 21NOV69)                                              09 DECEMBER 1970  @  12:17      PAGE   5
+
+0233 -3                  END;
+0234 --               NUMINBLOCK(BSPLIT):=NUMINBLOCK(BSPLIT)-NUMINSPLIT(BSPLIT);
+0235 --               NUMINBLOCK(FREEBLOCK):=NUMINSPLIT(BSPLIT);
+0236 --               NUMINSPLIT(BSPLIT):=0;
+0237 --               WHILE SPLIT(BSPLIT)¬=0 DO
+0238 3-                  BEGIN
+0239 --                     STATE:=DATA(SPLIT(BSPLIT));
+0240 --                     REMOVEFROM(SPLIT(BSPLIT));
+0241 --                     STATENEXT(STATELAST(N+STATE)):=STATENEXT(N+STATE);
+0242 --                     IF STATENEXT(N+STATE)¬=0 THEN
+0243 --                     STATELAST(STATENEXT(N+STATE)):=STATELAST(N+STATE);
+0244 --                     INSERTSTATE(FREEBLOCK,STATE);
+0245 --                     BLOCK(STATE):=FREEBLOCK;
+0246 --               IF PREVONZERO(STATE)¬=0 THEN
+0247 4-                  BEGIN
+0248 --                     ZERONEXT(ZEROLAST(N+STATE)):=ZERONEXT(N+STATE);
+0249 --                     IF ZERONEXT(N+STATE)¬=0 THEN
+0250 --                     ZEROLAST(ZERONEXT(N+STATE)):=ZEROLAST(N+STATE);
+0251 --                     INSERTZERO(FREEBLOCK,STATE);
+0252 --                     NUMZERO(BSPLIT):=NUMZERO(BSPLIT)-NZEROTR(STATE);
+0253 --                     NUMZERO(FREEBLOCK):=NUMZERO(FREEBLOCK)+NZEROTR(STATE);
+0254 -4                  END;
+0255 --               IF PREVONE(STATE)¬=0 THEN
+0256 4-                  BEGIN
+0257 --                     ONENEXT(ONELAST(N+STATE)):=ONENEXT(N+STATE);
+0258 --                     IF ONENEXT(N+STATE)¬=0 THEN
+0259 --                     ONELAST(ONENEXT(N+STATE)):=ONELAST(N+STATE);
+0260 --                     INSERTONE(FREEBLOCK,STATE);
+0261 --                     NUMONE(BSPLIT):=NUMONE(BSPLIT)-NONETR(STATE);
+0262 --                     NUMONE(FREEBLOCK):=NUMONE(FREEBLOCK)+NONETR(STATE);
+0263 -4                  END;
+0264 -3                  END;
+0265 --               COMMENT********************************************************
+0266 --               *     ADD NEW BLOCK TO BLOCKLIST
+0267 --               **************************************************************;
+0268 --               IF (ONBLOCKLISTZERO(BSPLIT)¬=1) AND (NUMZERO(BSPLIT)>0) AND
+0269 --                  (NUMZERO(BSPLIT)<=NUMZERO(FREEBLOCK)) THEN
+0270 3-                  BEGIN
+0271 --                     ADD(BLOCKLISTZERO,BSPLIT);
+0272 --                     ONBLOCKLISTZERO(BSPLIT):=1;
+0273 -3                  END
+0274 --               ELSE
+0275 3-                  BEGIN
+0276 --                     ADD(BLOCKLISTZERO,FREEBLOCK);
+0277 --                     ONBLOCKLISTZERO(FREEBLOCK):=1;
+0278 -3                  END;
+0279 --               IF (ONBLOCKLISTONE(BSPLIT)¬=1) AND (NUMONE(BSPLIT)>0) AND
+0280 --                  (NUMONE(BSPLIT)<=NUMONE(FREEBLOCK)) THEN
+0281 3-                  BEGIN
+0282 --                     ADD(BLOCKLISTONE,BSPLIT);
+0283 --                     ONBLOCKLISTONE(BSPLIT):=1;
+0284 -3                  END
+0285 --               ELSE
+0286 3-                  BEGIN
+0287 --                     ADD(BLOCKLISTONE,FREEBLOCK);
+0288 --                     ONBLOCKLISTONE(FREEBLOCK):=1;
+0289 -3                  END;
+0290 --               FREEBLOCK:=FREEBLOCK+1;
+
+
+
+STANFORD ALGOL W  (VERSION 21NOV69)                                              09 DECEMBER 1970  @  12:17      PAGE   6
+
+0291 --               GO TO RETURN;
+0292 --               COMMENT********************************************************
+0293 --               *     OUTPUT
+0294 --               **************************************************************;
+0295 --      FINISHED:FOR I:=1 UNTIL N DO
+0296 3-                  BEGIN
+0297 --                     CELL:=STATENEXT(I);
+0298 --                     IF CELL=0 THEN GO TO EXIT;
+0299 --                     WRITE("BLOCK",I);
+0300 --                     WRITE(CELL-N);
+0301 --                     CELL:=STATENEXT(CELL);
+0302 --                     WHILE CELL¬=0 DO
+0303 4-                        BEGIN
+0304 --                           WRITEON(CELL-N);
+0305 --                           CELL:=STATENEXT(CELL);
+0306 -4                        END;
+0307 -3                  END;
+0308 -2      EXIT: END;
+0309 -1      END.
+
+002.83 SECONDS IN COMPILATION, 10832 BYTES OF CODE GENERATED

@@ -1,0 +1,308 @@
+COMMENT*****************************************************************
+*     ALGORITHM TO MINIMIZE STATES IN FINITE AUTOMATON
+***********************************************************************;
+BEGIN
+   INTEGER N;
+   READ(N);
+      BEGIN
+         INTEGER ARRAY NEXTONZERO,NEXTONONE,PREVONZERO,PREVONONE(1::N);
+         INTEGER ARRAY FINAL(1::N);
+         INTEGER ARRAY DATA,NEXT(1::6*N);
+         INTEGER ARRAY STATENEXT,STATELAST,ONENEXT,ONELAST,ZERONEXT,
+            ZEROLAST,SPLIT(1::2*N);
+         INTEGER ARRAY BLOCK,NUMINBLOCK,NUMINSPLIT(1::N);
+         INTEGER ARRAY BLOCKSPLIT(1::N);
+         INTEGER ARRAY NUMZERO,NUMONE(1::N);
+         INTEGER ARRAY ONBLOCKLISTZERO,ONBLOCKLISTONE(1::N);
+         INTEGER ARRAY NZEROTR,NONETR(1::N);
+         INTEGER BLOCKLISTZERO,BLOCKLISTONE;
+         INTEGER FREE,CELL;
+         INTEGER LIST;
+         INTEGER SPLITBLOCKS;
+         INTEGER K,J,STATE,LASTSTATE,FREEBLOCK,BSPLIT;
+         PROCEDURE ADD(INTEGER VALUE RESULT X;INTEGER VALUE Y);
+            BEGIN
+               INTEGER TEMP;
+               TEMP:=FREE;
+               FREE:=NEXT(FREE);
+               NEXT(TEMP):=X;
+               X:=TEMP;
+               DATA(X):=Y;
+            END;
+         PROCEDURE REMOVEFROM(INTEGER VALUE RESULT X);
+            BEGIN
+               INTEGER TEMP;
+               TEMP:=FREE;
+               FREE:=X;
+               X:=NEXT(X);
+               NEXT(FREE):=TEMP;
+            END;
+         PROCEDURE INSERTSTATE(INTEGER VALUE X,Y);
+            BEGIN
+               STATENEXT(N+Y):=STATENEXT(X);
+               STATELAST(N+Y):=X;
+               IF (STATENEXT(X)¬=0) THEN
+               STATELAST(STATENEXT(X)):=N+Y;
+               STATENEXT(X):=N+Y;
+            END;
+         PROCEDURE INSERTZERO(INTEGER VALUE X,Y);
+            BEGIN
+               ZERONEXT(N+Y):=ZERONEXT(X);
+               ZEROLAST(N+Y):=X;
+               IF (ZERONEXT(X)¬=0) THEN
+               ZEROLAST(ZERONEXT(X)):=N+Y;
+               ZERONEXT(X):=N+Y;
+            END;
+         PROCEDURE INSERTONE(INTEGER VALUE X,Y);
+            BEGIN
+               ONENEXT(N+Y):=ONENEXT(X);
+               ONELAST(N+Y):=X;
+               IF (ONENEXT(X)¬=0) THEN
+               ONELAST(ONENEXT(X)):=N+Y;
+               ONENEXT(X):=N+Y;
+            END;
+PROCEDURE INITIALIZE;
+BEGIN
+         COMMENT********************************************************
+         *     INITIALIZE
+         **************************************************************;
+         FOR I:=1 UNTIL 2*N DO
+            BEGIN
+               STATENEXT(I):=STATELAST(I):=0;
+               ONENEXT(I):=ONELAST(I):=0;
+               ZERONEXT(I):=ZEROLAST(I):=0;
+            END;
+         FOR I:=1 UNTIL N DO
+            BEGIN
+               PREVONZERO(I):=PREVONONE(I):=0;
+               NUMZERO(I):=NUMONE(I):=0;
+               SPLIT(I):=BLOCKSPLIT(I):=0;
+               NUMINBLOCK(I):=NUMINSPLIT(I):=0;
+               ONBLOCKLISTZERO(i):=ONBLOCKLISTONE(I):=0;
+               NZEROTR(I):=NONETR(I):=0;
+            END;
+         FOR I:=1 UNTIL 6*N DO NEXT(I):=I+1;
+         NEXT(6*N):=0;
+         BLOCKLISTZERO:=BLOCKLISTONE:=0;
+         FREE:=1;
+         SPLITBLOCKS:=0;
+         WRITE("STATE TABLE");
+         WRITE("          STATE           INPUT 0     INPUT 1     OUTPUT");
+         FOR I:=1 UNTIL N DO
+            BEGIN
+               READ(NEXTONZERO(I),NEXTONONE(I),FINAL(I));
+               WRITE(I,NEXTONZERO(I),NEXTONONE(I),FINAL(I));
+            END;
+         COMMENT********************************************************
+         *     INVERT STATE TABLE
+         **************************************************************;
+         FOR I := 1 UNTIL N DO
+            BEGIN
+               ADD(PREVONZERO(NEXTONZERO(I)),I);
+               NZEROTR(DATA(PREVONZERO(NEXTONZERO(I)))):=
+                  NZEROTR(DATA(PREVONZERO(NEXTONZERO(I))))+1;
+               ADD(PREVONONE(NEXTONONE(I)),I);
+               NONETR(DATA(PREVONONE(NEXTONONE(I)))):=
+                  NONETR(DATA(PREVONONE(NEXTONONE(I))))+1;
+            END;
+         COMMENT********************************************************
+         *     SET UP INITIAL BLOCKS
+         **************************************************************;
+         FOR I := 1 UNTIL N DO
+            BEGIN
+               IF FINAL(I)=1 THEN
+                  BEGIN
+                     INSERTSTATE(1,I);
+                     IF NEXTONZERO(I)¬=0 THEN
+                        BEGIN
+                           INSERTZERO(1,I);
+                           NUMZERO(1):=NUMZERO(1)+NZEROTR(I);
+                        END;
+                     IF NEXTONONE(I)¬=0 THEN
+                        BEGIN
+                           INSERTONE(1,I);
+                           NUMONE(1):=NUMONE(1)+NONETR(I);
+                        END;
+                     BLOCK(I):=1;
+                     NUMINBLOCK(I):=NUMINBLOCK(I)+1;
+                  END
+               ELSE
+                  BEGIN
+                     INSERTSTATE(2,I);
+                     IF NEXTONZERO(I)¬=0 THEN
+                        BEGIN
+                           INSERTZERO(2,I);
+                           NUMZERO(2):=NUMZERO(2)+NZEROTR(I);
+                        END;
+                     IF NEXTONONE(I)¬=0 THEN
+                        BEGIN
+                           INSERTONE(2,I);
+                           NUMONE(2):=NUMONE(2)+NONETR(I);
+                        END;
+                     BLOCK(I):=2;
+                     NUMINBLOCK(2):=NUMINBLOCK(2)+1;
+                  END;
+            END;
+         IF (NUMZERO(1)>=0) AND (NUMZERO(1)<=NUMZERO(2)) THEN
+            BEGIN
+               ADD(BLOCKLISTZERO,1);
+               ONBLOCKLISTZERO(1):=1;
+            END
+         ELSE
+            BEGIN
+               ADD(BLOCKLISTZERO,2);
+               ONBLOCKLISTZERO(2):=2;
+            END;
+         IF (NUMONE(1)>=0) AND (NUMONE(1)<=NUMONE(2)) THEN
+            BEGIN
+               ADD(BLOCKLISTONE,1);
+               ONBLOCKLISTONE(1):=1;
+            END
+         ELSE
+            BEGIN
+               ADD(BLOCKLISTONE,2);
+               ONBLOCKLISTONE(2):=2;
+            END;
+         FREEBLOCK:=3;
+END;
+INITIALIZE;
+         COMMENT********************************************************
+         *     SELECT BLOCK AND PARTITION ON IT
+         **************************************************************;
+REPEAT:  IF BLOCKLISTZERO¬=0 THEN
+            BEGIN
+               J:=DATA(BLOCKLISTZERO);
+               REMOVEFROM(BLOCKLISTZERO);
+               ONBLOCKLISTZERO(J):=0;
+               GO TO DIVZERO;
+            END
+         ELSE IF BLOCKLISTONE¬=0 THEN
+            BEGIN
+               J:=DATA(BLOCKLISTONE);
+               REMOVEFROM(BLOCKLISTONE);
+               ONBLOCKLISTONE(J):=0;
+               GO TO DIVONE;
+            END
+         ELSE GO TO FINISHED;
+DIVZERO: STATE:=ZERONEXT(J);
+         WHILE STATE¬=0 DO
+            BEGIN
+               CELL:=PREVONZERO(STATE-N);
+               WHILE CELL¬=0 DO
+                  BEGIN
+                     LASTSTATE:=DATA(CELL);
+                     K:=BLOCK(LASTSTATE);
+                     ADD(SPLIT(K),LASTSTATE);
+                     IF BLOCKSPLIT(K)=0 THEN ADD(SPLITBLOCKS,K);
+                     NUMINSPLIT(K):=NUMINSPLIT(K)+1;
+                     BLOCKSPLIT(K):=1;
+                     CELL:=NEXT(CELL);
+                  END;
+               STATE:=ZERONEXT(STATE);
+            END;
+         GO TO RETURN;
+DIVONE:  STATE:=ONENEXT(J);
+         WHILE STATE¬=0 DO
+            BEGIN
+               CELL:=PREVONONE(STATE-N);
+               WHILE CELL¬=0 DO
+                  BEGIN
+                     LASTSTATE:=DATA(CELL);
+                     K:=BLOCK(LASTSTATE);
+                     ADD(SPLIT(K),LASTSTATE);
+                     IF BLOCKSPLIT(K)=0 THEN ADD(SPLITBLOCKS,K);
+                     NUMINSPLIT(K):=NUMINSPLIT(K)+1;
+                     BLOCKSPLIT(K):=1;
+                     CELL:=NEXT(CELL);
+                  END;
+               STATE:=ONENEXT(STATE);
+            END;
+         COMMENT********************************************************
+         *     REFINE BLOCKS
+         **************************************************************;
+RETURN:  IF (SPLITBLOCKS=0) THEN GO TO REPEAT;
+         BSPLIT:=DATA(SPLITBLOCKS);
+         REMOVEFROM(SPLITBLOCKS);
+         BLOCKSPLIT(BSPLIT):=0;
+         IF NUMINBLOCK(BSPLIT)=NUMINSPLIT(BSPLIT) THEN
+            BEGIN
+               NUMINSPLIT(BSPLIT):=0;
+               WHILE (SPLIT(BSPLIT)¬=0) DO REMOVEFROM(SPLIT(BSPLIT));
+               GO TO RETURN;
+            END;
+         NUMINBLOCK(BSPLIT):=NUMINBLOCK(BSPLIT)-NUMINSPLIT(BSPLIT);
+         NUMINBLOCK(FREEBLOCK):=NUMINSPLIT(BSPLIT);
+         NUMINSPLIT(BSPLIT):=0;
+         WHILE SPLIT(BSPLIT)¬=0 DO
+            BEGIN
+               STATE:=DATA(SPLIT(BSPLIT));
+               REMOVEFROM(SPLIT(BSPLIT));
+               STATENEXT(STATELAST(N+STATE)):=STATENEXT(N+STATE);
+               IF STATENEXT(N+STATE)¬=0 THEN
+               STATELAST(STATENEXT(N+STATE)):=STATELAST(N+STATE);
+               INSERTSTATE(FREEBLOCK,STATE);
+               BLOCK(STATE):=FREEBLOCK;
+         IF PREVONZERO(STATE)¬=0 THEN
+            BEGIN
+               ZERONEXT(ZEROLAST(N+STATE)):=ZERONEXT(N+STATE);
+               IF ZERONEXT(N+STATE)¬=0 THEN
+               ZEROLAST(ZERONEXT(N+STATE)):=ZEROLAST(N+STATE);
+               INSERTZERO(FREEBLOCK,STATE);
+               NUMZERO(BSPLIT):=NUMZERO(BSPLIT)-NZEROTR(STATE);
+               NUMZERO(FREEBLOCK):=NUMZERO(FREEBLOCK)+NZEROTR(STATE);
+            END;
+         IF PREVONE(STATE)¬=0 THEN
+            BEGIN
+               ONENEXT(ONELAST(N+STATE)):=ONENEXT(N+STATE);
+               IF ONENEXT(N+STATE)¬=0 THEN
+               ONELAST(ONENEXT(N+STATE)):=ONELAST(N+STATE);
+               INSERTONE(FREEBLOCK,STATE);
+               NUMONE(BSPLIT):=NUMONE(BSPLIT)-NONETR(STATE);
+               NUMONE(FREEBLOCK):=NUMONE(FREEBLOCK)+NONETR(STATE);
+            END;
+            END;
+         COMMENT********************************************************
+         *     ADD NEW BLOCK TO BLOCKLIST
+         **************************************************************;
+         IF (ONBLOCKLISTZERO(BSPLIT)¬=1) AND (NUMZERO(BSPLIT)>0) AND
+            (NUMZERO(BSPLIT)<=NUMZERO(FREEBLOCK)) THEN
+            BEGIN
+               ADD(BLOCKLISTZERO,BSPLIT);
+               ONBLOCKLISTZERO(BSPLIT):=1;
+            END
+         ELSE
+            BEGIN
+               ADD(BLOCKLISTZERO,FREEBLOCK);
+               ONBLOCKLISTZERO(FREEBLOCK):=1;
+            END;
+         IF (ONBLOCKLISTONE(BSPLIT)¬=1) AND (NUMONE(BSPLIT)>0) AND
+            (NUMONE(BSPLIT)<=NUMONE(FREEBLOCK)) THEN
+            BEGIN
+               ADD(BLOCKLISTONE,BSPLIT);
+               ONBLOCKLISTONE(BSPLIT):=1;
+            END
+         ELSE
+            BEGIN
+               ADD(BLOCKLISTONE,FREEBLOCK);
+               ONBLOCKLISTONE(FREEBLOCK):=1;
+            END;
+         FREEBLOCK:=FREEBLOCK+1;
+         GO TO RETURN;
+         COMMENT********************************************************
+         *     OUTPUT
+         **************************************************************;
+FINISHED:FOR I:=1 UNTIL N DO
+            BEGIN
+               CELL:=STATENEXT(I);
+               IF CELL=0 THEN GO TO EXIT;
+               WRITE("BLOCK",I);
+               WRITE(CELL-N);
+               CELL:=STATENEXT(CELL);
+               WHILE CELL¬=0 DO
+                  BEGIN
+                     WRITEON(CELL-N);
+                     CELL:=STATENEXT(CELL);
+                  END;
+            END;
+EXIT: END;
+END.
