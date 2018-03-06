@@ -3,10 +3,10 @@ Cleaned-up for readability version of Hopcrofts CS-TR-71-190
 
 This repository contains a LaTeX version of Hopcrofts document...
 
-> Stanford University, Department of Computer Science, CS-TR-71-190
-> An n log n algorithm for minimizing states in a finite automaton
-> John Hopcroft
-> January 1971
+* Stanford University, Department of Computer Science, CS-TR-71-190
+* An n log n algorithm for minimizing states in a finite automaton
+* John Hopcroft
+* January 1971
 
 There's a scan at the public server here...
 
